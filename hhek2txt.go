@@ -12,8 +12,8 @@
 
 // Prepare: install git: Git-2.23.0-64-bit
 // Prepare: install golang 32-bits (can't access access/jet driver using 64-bits)
-//   go1.13.3.windows-386.msi
-// Prepare: go get github.com/alexbrainman/odbc
+//   go1.16.3.windows-386.msi
+// Prepare: go get github.com/mattn/go-adodb
 // Build: go build hhek2txt.go
 // Run: ./hhek2txt.exe -help
 // Run: ./hhek2txt.exe -optin=hemekonomi.mdb
@@ -30,7 +30,10 @@ import (
 	"golang.org/x/text/encoding/charmap"
 	"reflect"
 	"database/sql"
-	_ "github.com/alexbrainman/odbc"
+
+	"github.com/go-ole/go-ole"
+	_ "github.com/go-ole/go-ole/oleutil"
+	_ "github.com/mattn/go-adodb"
 )
 
 func toUtf8(in_buf []byte) string {
@@ -44,7 +47,6 @@ func toUtf8(in_buf []byte) string {
 	stringVal3 := strings.ReplaceAll(stringVal2, "\"", "\"\"");
 	return stringVal3
 }
-
 
 // fileExists checks if a file exists and is not a directory before we
 // try using it to prevent further errors.
@@ -138,8 +140,8 @@ func DumpTable(db *sql.DB, tablename string, col_names []string) {
 		
 		fmt.Println("COLNAME: ", value.Name(),
 			"DBTYP: ", value.DatabaseTypeName() ,
-			"DEC: ", decprecision, decscale, decok,
-			"LEN: ", length, lenok,
+			"DEC(precision, scale, ok): ", decprecision, decscale, decok,
+			"LEN(len, ok): ", length, lenok,
 			"NULLABLE: ", nullable, nullok, 
 			"ScanType: ", value.ScanType().Name())
 	}
@@ -162,11 +164,15 @@ func DumpTable(db *sql.DB, tablename string, col_names []string) {
 				if str, ok := val.(float64); ok {
 					fmt.Println("Key:", key, "Value f64:", str)
 				} else if str, ok := val.([]uint8); ok {
-					fmt.Println("Key:", key, "Value : '"+toUtf8(str)+"'")
+					fmt.Println("Key:", key, "Value uint8string: '"+toUtf8(str)+"'")
 				} else if str, ok := val.(int32); ok {
 					fmt.Println("Key:", key, "Value int32:", str)
+				} else if str, ok := val.(int64); ok {
+					fmt.Println("Key:", key, "Value int64:", str)
 				} else if str, ok := val.(bool); ok {
 					fmt.Println("Key:", key, "Value BOOL:", str)
+				} else if str, ok := val.(string); ok {
+					fmt.Println("Key:", key, "Value String: '"+str+"'")
 				} else {
 					fmt.Println("Key:", key, "Value Unhandled Type:", reflect.TypeOf(val))
 				}
@@ -179,7 +185,6 @@ func DumpTable(db *sql.DB, tablename string, col_names []string) {
 
 func main() {
 	optinPtr := flag.String("optin", "", "Hogia Hemekonomi database filename (*.mdb)")
-	readonlyoptPtr := flag.Bool("readonly", true, "Öppna mdb skrivskyddat.")
 	
 	flag.Parse()
 	
@@ -194,30 +199,21 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	
-	//   powershell show available:  get-odbcdriver -name "*mdb*"
-	// ODBC options see https://docs.microsoft.com/en-us/sql/odbc/microsoft/setting-options-programmatically-for-the-access-driver?view=sql-server-ver15
-	readonlyCommand := ""
-	if *readonlyoptPtr {
-		readonlyCommand = "READONLY;"
-		fmt.Println("Setting Readonly")
-	}
 
+	ole.CoInitialize(0)
+	defer ole.CoUninitialize()
+	
 	var err error
 	var db *sql.DB
 	
-	databaseAccessCommand := "Driver={Microsoft Access Driver (*.mdb)};"+
-		readonlyCommand +
-		"DBQ="+filename
-	//fmt.Println("Database access command: "+databaseAccessCommand)
-	db, err = sql.Open("odbc",
-		databaseAccessCommand)
-
+	provider := "Microsoft.Jet.OLEDB.4.0"
+	db, err = sql.Open("adodb", "Provider="+provider+";Data Source="+filename+";")
 	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
+		fmt.Println("open", err)
+		return
 	}
-
+	defer db.Close()
+	
 	// GET TABLES
 	tables, cols := GetTables(db)
 	
