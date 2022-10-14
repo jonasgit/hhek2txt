@@ -22,6 +22,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"fmt"
 	"flag"
 	"log"
@@ -164,7 +165,7 @@ func DumpTable(db *sql.DB, tablename string, col_names []string) {
 				if str, ok := val.(float64); ok {
 					fmt.Println("Key:", key, "Value f64:", str)
 				} else if str, ok := val.([]uint8); ok {
-					fmt.Println("Key:", key, "Value uint8string: '"+toUtf8(str)+"'")
+					fmt.Println("Key:", key, "Value uint8string: '"+toUtf8(str)+"' "+hex.Dump(str))
 				} else if str, ok := val.(int32); ok {
 					fmt.Println("Key:", key, "Value int32:", str)
 				} else if str, ok := val.(int64); ok {
@@ -172,7 +173,7 @@ func DumpTable(db *sql.DB, tablename string, col_names []string) {
 				} else if str, ok := val.(bool); ok {
 					fmt.Println("Key:", key, "Value BOOL:", str)
 				} else if str, ok := val.(string); ok {
-					fmt.Println("Key:", key, "Value String: '"+str+"'")
+					fmt.Println("Key:", key, "Value String: '"+str+"' "+hex.Dump([]byte(str)))
 				} else {
 					fmt.Println("Key:", key, "Value Unhandled Type:", reflect.TypeOf(val))
 				}
