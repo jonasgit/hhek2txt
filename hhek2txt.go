@@ -67,13 +67,13 @@ func GetTables(db *sql.DB) ([]string , map[string][]string) {
 		        "DtbVer": {"VerNum", "Benämning", "Losenord" },
 			"Personer": {"Namn", "Född", "Kön", "Löpnr" },
 			"BetalKonton": {"Konto", "Kontonummer", "Kundnummer", "Sigillnummer", "Löpnr" },
-			"Betalningar": {"FrånKonto", "TillPlats", "Typ", "Datum", "Vad", "Vem", "Belopp", "`Text`", "Löpnr", "Ranta", "FastAmort", "RorligAmort", "OvrUtg", "LanLopnr", "Grey" },
+			"Betalningar": {"FrånKonto", "TillPlats", "Typ", "Datum", "Vad", "Vem", "Belopp", "Text", "Löpnr", "Ranta", "FastAmort", "RorligAmort", "OvrUtg", "LanLopnr", "Grey" },
 			"Överföringar": {"FrånKonto", "TillKonto", "Belopp", "Datum", "HurOfta", "Vad", "Vem", "Löpnr", "Kontrollnr", "TillDatum", "Rakning" },
 			"Konton": {"KontoNummer", "Benämning", "Saldo", "StartSaldo", "StartManad", "Löpnr", "SaldoArsskifte", "ArsskifteManad" },
 			"LÅN": {"Langivare", "EgenBeskrivn", "LanNummer", "TotLanebelopp", "StartDatum", "RegDatum", "RantJustDatum", "SlutBetDatum", "AktLaneskuld", "RorligDel", "FastDel", "FastRanta", "RorligRanta", "HurOfta", "Ranta", "FastAmort", "RorligAmort", "OvrUtg", "Löpnr", "Rakning", "Vem", "FrånKonto", "Grey", "Anteckningar", "BudgetRanta", "BudgetAmort", "BudgetOvriga" },
 			"Platser": {"Namn", "Gironummer", "Typ", "RefKonto", "Löpnr" },
 			"Budget": {"Typ", "Inkomst", "HurOfta", "StartMånad", "Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec", "Kontrollnr", "Löpnr" },
-			"Transaktioner": {"FrånKonto", "TillKonto", "Typ", "Datum", "Vad", "Vem", "Belopp", "Löpnr", "Saldo", "Fastöverföring", "`Text`" }}
+			"Transaktioner": {"FrånKonto", "TillKonto", "Typ", "Datum", "Vad", "Vem", "Belopp", "Löpnr", "Saldo", "Fastöverföring", "Text" }}
 
 	return tables,cols
 }
